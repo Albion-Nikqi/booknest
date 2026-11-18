@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 
 class Author(models.Model):
@@ -45,6 +46,28 @@ class Book(models.Model):
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if self.pk:
+            # Merr librin e vjetër nga databaza për të krahasuar total_copies
+            old_book = Book.objects.get(pk=self.pk)
+            active_loans_count = self.loans.filter(returned_at__isnull=True).count()
+            
+            # Rregulla 10: total_copies nuk mund të bëhet më i vogël se huazimet aktive
+            if self.total_copies < active_loans_count:
+        
+                raise ValidationError(f"Total copies s'mund të jetë më i vogël se huazimet aktive ({active_loans_count}).")
+    
+    def delete(self, *args, **kwargs):
+        active_loans_count = self.loans.filter(returned_at__isnull=True).count()
+        if active_loans_count > 0:
+            raise ValidationError("Ky libër ka huazime aktive dhe nuk mund të fshihet.")
+        super().delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Kjo detyron me thirrë clean() para çdo ruajtjeje
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'library_book'
