@@ -10,7 +10,6 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ['id', 'name', 'slug']
 
-
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
@@ -77,7 +76,7 @@ class LoanSerializer(serializers.ModelSerializer):
             book = Book.objects.select_for_update().get(pk=book_data.pk)
 
             if book.available_copies <= 0:
-                raise serializers.ValidationError({'book': 'Na vjen keq, kopja e fundit toc toc sapo u mor nga nje përdorues tjeter.'})
+                raise serializers.ValidationError({'book': 'Na vjen keq, kopja e fundit toc sapo u mor nga nje përdorues tjeter.'})
 
             borrowed_at = timezone.now().date()
             due_date = borrowed_at + timezone.timedelta(days=14)
@@ -97,7 +96,6 @@ class LoanSerializer(serializers.ModelSerializer):
 
         return loan
         
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -106,10 +104,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'password'] 
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            is_staff=False
+        user = User.objects.create_user(username=validated_data['username'], email=validated_data['email'],
+            password=validated_data['password'], is_staff=False
         )
         return user

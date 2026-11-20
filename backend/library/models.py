@@ -30,17 +30,8 @@ class Genre(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=255)
     isbn = models.CharField(max_length=13, unique=True)
-    author = models.ForeignKey(
-        Author,
-        on_delete=models.PROTECT,
-        related_name='books'
-    )
-    genres = models.ManyToManyField (
-        Genre,
-        db_table='library_book_genre',
-        related_name='books',
-        blank=True
-    )
+    author = models.ForeignKey(Author, on_delete=models.PROTECT, related_name='books')
+    genres = models.ManyToManyField(Genre, db_table='library_book_genre', related_name='books', blank=True)
     description = models.TextField(blank=True, null=True)
     published_year = models.PositiveSmallIntegerField(blank=True, null=True)
     total_copies = models.PositiveIntegerField(default=1)
@@ -84,26 +75,12 @@ class Loan(models.Model):
         ('overdue', 'Overdue')
     ]
 
-    book = models.ForeignKey (
-        Book,
-        on_delete=models.PROTECT,
-        related_name='loans'
-    )
-
-    member = models.ForeignKey(
-        User,
-        on_delete=models.PROTECT,
-        related_name='loans'
-    )
-
+    book = models.ForeignKey(Book, on_delete=models.PROTECT, related_name='loans')
+    member = models.ForeignKey(User, on_delete=models.PROTECT, related_name='loans')
     borrowed_at = models.DateTimeField(auto_now_add=True)
     due_date = models.DateField()
     returned_at = models.DateTimeField(blank=True, null=True)
-    status = models.CharField (
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default='borrowed'
-    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='borrowed')
 
     class Meta:
         db_table = 'library_loan'
